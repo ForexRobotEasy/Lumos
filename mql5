@@ -1,0 +1,90 @@
+mql5
+// Lumos Code Development
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+#include <Indicators\MovingAverages\MA.mqh>
+#include <Indicators\Oscillators\RSI.mqh>
+
+// Define global variables
+input int timeframe = PERIOD_CURRENT; // Timeframe for analysis
+input double stopLossDistance = 50; // Distance from current price to stop loss
+input double maPeriod = 14; // Period for Moving Average calculation
+input double rsiPeriod = 14; // Period for RSI calculation
+input double rsiMaPeriod = 7; // Period for RSI Moving Average calculation
+
+// Initialize objects
+CTrade trade;
+CMA movingAverage;
+CRSI relativeStrengthIndex;
+
+// Define custom function for market analysis
+void AnalyzeMarket()
+{
+    // Get current market price
+    double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+    // Calculate Moving Average values
+    double maValue = movingAverage.iMA(_Symbol, timeframe, maPeriod, 0, MODE_EMA, PRICE_CLOSE, 0);
+
+    // Calculate RSI values
+    double rsiValue = relativeStrengthIndex.iRSI(_Symbol, timeframe, rsiPeriod, PRICE_CLOSE, 0);
+
+    // Calculate RSI Moving Average values
+    double rsiMaValue = movingAverage.iMAOnArray(rsiValue, 0, rsiMaPeriod, 0, MODE_EMA, 0);
+
+    // Calculate stop loss level
+    double stopLossLevel = currentPrice - stopLossDistance * _Point;
+
+    // Print market analysis results
+    Print('Current Price: ', currentPrice);
+    Print('Moving Average: ', maValue);
+    Print('RSI: ', rsiValue);
+    Print('RSI Moving Average: ', rsiMaValue);
+    Print('Stop Loss Level: ', stopLossLevel);
+}
+
+// Define custom function for trading strategy
+void ExecuteStrategy()
+{
+    // Add your trading strategy code here
+}
+
+// Define custom function for main algorithm
+void Lumos()
+{
+    // Analyze market
+    AnalyzeMarket();
+
+    // Execute trading strategy
+    ExecuteStrategy();
+}
+
+// Entry point of the program
+int OnInit()
+{
+    // Initialize objects
+    movingAverage.Create();
+    relativeStrengthIndex.Create();
+
+    // Set indicator parameters
+    movingAverage.SetSymbol(_Symbol);
+    movingAverage.SetPeriod(maPeriod);
+    movingAverage.SetAppliedPrice(PRICE_CLOSE);
+
+    relativeStrengthIndex.SetSymbol(_Symbol);
+    relativeStrengthIndex.SetPeriod(rsiPeriod);
+
+    // Execute Lumos algorithm
+    Lumos();
+
+    // Return initialization result
+    return(INIT_SUCCEEDED);
+}
+
+// Program loop
+void OnTick()
+{
+    // Execute Lumos algorithm on each tick
+    Lumos();
+}
